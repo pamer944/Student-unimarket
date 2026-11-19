@@ -444,7 +444,7 @@ $("f-type").addEventListener("change",syncForm);
 $("form").addEventListener("submit",publish);
 $("resetBtn").addEventListener("click",resetForm);
 $("postBtn").addEventListener("click",()=>{$("uploadPanel").scrollIntoView({behavior:"smooth"});setTimeout(()=>$("f-title").focus({preventScroll:true}),500)});
-$("f-photo").addEventListener("change",()=>{const f=$("f-photo").files[0],p=$("preview"); if(p.src) URL.revokeObjectURL(p.src); if(f&&f.type.startsWith("image/")){p.src=URL.createObjectURL(f);p.classList.remove("hidden")}else p.classList.add("hidden")});
+$("f-photo").addEventListener("change",()=>{const f=$("f-photo").files[0],p=$("preview"); p.classList.add("hidden"); if(!f||!f.type.startsWith("image/")) return; const r=new FileReader(); r.onload=()=>{p.onerror=()=>p.classList.add("hidden"); p.src=r.result; p.classList.remove("hidden")}; r.readAsDataURL(f)});
 $("closeViewer").addEventListener("click",closeViewer);
 $("viewer").addEventListener("click",e=>{if(e.target.id==="viewer") closeViewer()});
 $("dlBtn").addEventListener("click",()=>viewing&&downloadPhoto(viewing));
