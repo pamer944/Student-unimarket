@@ -40,7 +40,7 @@ alter table public.listings add constraint listings_rules check (
   and coalesce(char_length(description),0) <= 1000
   and (phone is null or phone ~ '^[0-9]{10,15}$')
   and (link is null or (link ~* '^https?://' and char_length(link) <= 500))
-  and (image_url is null or image_url like 'https://svipakncqjnzccurdyfh.supabase.co/storage/v1/object/public/product-images/%')
+  and (image_url is null or image_url like 'https://wcvualnkdslszltismqs.supabase.co/storage/v1/object/public/product-images/%')
 ) not valid;  -- "not valid" = old rows aren't checked, new ones are
 
 create index if not exists listings_created_idx on public.listings (created_at desc);
