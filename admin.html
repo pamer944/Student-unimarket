@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin | Student UniMarket</title>
+<style>
+:root{--bg:#101411;--panel:#1b241e;--panel2:#253129;--green:#00d26a;--muted:#aebbb2;--line:#354239;--white:#f5fff8;--orange:#ffad33;--red:#d64545}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--white);font-family:Arial,Helvetica,sans-serif}
+header{background:#17221b;border-bottom:3px solid var(--green);padding:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:5}
+header h1{margin:0;color:#36ee8a;font-size:20px}
+.wrap{max-width:1100px;margin:auto;padding:12px}
+input,textarea,select{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:#111a14;color:#fff;font:inherit;font-size:16px}
+label{font-size:12px;color:var(--muted);display:block;margin:8px 0 4px}
+button,.btn{border:0;border-radius:10px;padding:10px 13px;background:var(--green);color:#06130a;font:inherit;font-weight:bold;cursor:pointer;text-decoration:none;display:inline-block;text-align:center}
+button:disabled{opacity:.6}
+.secondary{background:var(--panel2)!important;color:#fff!important;border:1px solid var(--line)!important}
+.orange{background:var(--orange)!important;color:#1a1000!important}
+.danger{background:var(--red)!important;color:#fff!important}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px;margin:12px 0}
+.muted{color:var(--muted);font-size:13px;line-height:1.5}
+.hidden{display:none!important}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:12px 0}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
+.stat b{display:block;font-size:26px;color:#4cf39a}
+.stat span{font-size:12px;color:var(--muted)}
+.toolbar{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px}
+@media(max-width:600px){.toolbar{grid-template-columns:1fr 1fr}.toolbar input{grid-column:1/-1}}
+.row{display:flex;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;margin:10px 0}
+.row.is-hidden{opacity:.55;border-style:dashed}
+.thumb{width:84px;height:84px;flex:0 0 84px;border-radius:9px;background:#26332a;display:flex;align-items:center;justify-content:center;font-size:30px;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.info{flex:1;min-width:0}
+.info .t{font-weight:bold;word-wrap:break-word}
+.info .p{color:#4cf39a;font-weight:bold}
+.info .m{font-size:12px;color:var(--muted);margin-top:3px;word-wrap:break-word}
+.badge{display:inline-block;font-size:10px;font-weight:bold;padding:3px 6px;border-radius:5px;margin:2px 4px 2px 0;background:#064b2b;color:#8affbb}
+.badge.f{background:var(--orange);color:#1a1000}.badge.h{background:#5a1f1f;color:#ffbcbc}
+.acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.acts button,.acts a{font-size:12px;padding:8px 10px}
+.empty{padding:25px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
+.modal{position:fixed;inset:0;background:#000c;display:flex;align-items:center;justify-content:center;padding:14px;z-index:30}
+.box{max-width:520px;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:16px;max-height:92vh;overflow:auto}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}
+.grid2 .full{grid-column:1/-1}
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#eafff1;color:#062512;padding:11px 16px;border-radius:10px;display:none;z-index:40;box-shadow:0 4px 20px #0008;max-width:92vw;text-align:center}
+#login{max-width:400px;margin:40px auto}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚙️ UniMarket Admin</h1>
+  <div id="who" class="hidden"><button class="secondary" id="logoutBtn">Log out</button></div>
+</header>
+
+<div class="wrap">
+  <!-- LOGIN -->
+  <form id="login" class="panel hidden">
+    <h3 style="margin-top:0">Admin login</h3>
+    <label for="email">Email</label><input id="email" type="email" autocomplete="username" required>
+    <label for="pass">Password</label><input id="pass" type="password" autocomplete="current-password" required>
+    <div style="margin-top:14px"><button type="submit" id="loginBtn" style="width:100%">Log in</button></div>
+    <p class="muted">Only accounts added as admins in Supabase can open this dashboard.</p>
+  </form>
+
+  <!-- DASHBOARD -->
+  <div id="app" class="hidden">
+    <div class="stats" id="stats"></div>
+    <div class="panel">
+      <div class="toolbar">
+        <input id="q" type="search" placeholder="🔍 Search title, seller, phone...">
+        <select id="fType"><option value="">All types</option><option value="product">🛒 Products</option><option value="room">🏠 Rooms</option><option value="material">📚 Materials</option><option value="video">🎥 Videos</option></select>
+        <select id="fState"><option value="">All statuses</option><option value="visible">Visible</option><option value="hidden">Hidden</option><option value="featured">Featured</option></select>
+      </div>
+      <div class="acts">
+        <button class="secondary" id="refreshBtn">↻ Refresh</button>
+        <button class="secondary" id="csvBtn">⬇️ Export CSV</button>
+        <a class="btn secondary" href="./" target="_blank" rel="noopener">Open site ↗</a>
+      </div>
+    </div>
+    <p class="muted" id="count"></p>
+    <div id="list"></div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div id="editModal" class="modal hidden" role="dialog" aria-modal="true">
+  <form class="box" id="editForm">
+    <h3 style="margin-top:0">✏️ Edit listing</h3>
+    <div class="grid2">
+      <div class="full"><label>Title</label><input id="e-title" maxlength="80" required></div>
+      <div><label>Price</label><input id="e-price" maxlength="30"></div>
+      <div><label>Category</label><input id="e-category" maxlength="40"></div>
+      <div><label>Location</label><input id="e-location" maxlength="60"></div>
+      <div><label>Availability (rooms)</label><select id="e-status"><option value="">—</option><option>Available</option><option>Few rooms left</option><option>Full</option></select></div>
+      <div class="full"><label>Features (rooms, comma separated)</label><input id="e-features" maxlength="200"></div>
+      <div><label>Seller</label><input id="e-seller" maxlength="60"></div>
+      <div><label>WhatsApp (260…)</label><input id="e-phone" maxlength="15"></div>
+      <div class="full"><label>Link</label><input id="e-link" maxlength="500"></div>
+      <div class="full"><label>Description</label><textarea id="e-description" maxlength="1000" rows="4"></textarea></div>
+    </div>
+    <div class="acts" style="margin-top:14px">
+      <button type="submit" id="saveBtn">Save changes</button>
+      <button type="button" class="secondary" id="cancelEdit">Cancel</button>
+    </div>
+  </form>
+</div>
+
+<!-- DELETE MODAL -->
+<div id="delModal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="box">
+    <h3 style="margin-top:0">🗑️ Delete listing?</h3>
+    <p class="muted" id="delText"></p>
+    <p class="muted">This permanently removes the listing and its photo. To take it down temporarily, use <b>Hide</b> instead.</p>
+    <div class="acts"><button class="danger" id="confirmDel">Delete forever</button><button class="secondary" id="cancelDel">Cancel</button></div>
+  </div>
+</div>
+
+<div id="toast" role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://wcvualnkdslszltismqs.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_r4oSgwOcpu1Le7VH5S9Qsg_hCcCb4B7";
+const BUCKET = "product-images";
+const ADMIN_EMAILS = ["zuluiwell26@gmail.com","mumbap771@gmail.com"];
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const EMOJI = {product:"🛍️",room:"🏠",material:"📚",video:"🎥"};
+const $ = id => document.getElementById(id);
+let rows = [], editing = null, deleting = null;
+
+function esc(s){return String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function toast(m,ms=3500){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display="none",ms)}
+function ago(t){const s=(Date.now()-new Date(t))/1000;if(isNaN(s))return"";if(s<3600)return Math.max(1,Math.round(s/60))+" min ago";if(s<86400)return Math.round(s/3600)+" h ago";const d=Math.round(s/86400);return d===1?"yesterday":d+" days ago"}
+function normPhone(raw){let d=String(raw||"").replace(/\D/g,"");if(d.startsWith("00"))d=d.slice(2);if(d.length===10&&d[0]==="0")d="260"+d.slice(1);else if(d.length===9&&/^[79]/.test(d))d="260"+d;return /^\d{10,15}$/.test(d)?d:null}
+function storagePath(url){const k="/"+BUCKET+"/";const i=String(url||"").indexOf(k);return i<0?null:decodeURIComponent(url.slice(i+k.length).split("?")[0])}
+
+/* ---------- Auth ---------- */
+function show(view){$("login").classList.toggle("hidden",view!=="login");$("app").classList.toggle("hidden",view!=="app");$("who").classList.toggle("hidden",view!=="app")}
+async function enter(){
+  const {data:{user}}=await db.auth.getUser();
+  if(!user||!ADMIN_EMAILS.includes(String(user.email).toLowerCase())){ toast("This account is not an admin.",6000); await db.auth.signOut(); show("login"); return; }
+  const {data,error}=await db.rpc("is_admin");
+  if(error||!data){ toast(error?"Admin setup missing — run the admin SQL in Supabase.":"This account is not an admin.",6000); await db.auth.signOut(); show("login"); return; }
+  show("app"); load();
+}
+$("login").addEventListener("submit",async e=>{
+  e.preventDefault(); const b=$("loginBtn"); b.disabled=true; b.textContent="Logging in...";
+  const {error}=await db.auth.signInWithPassword({email:$("email").value.trim(),password:$("pass").value});
+  b.disabled=false; b.textContent="Log in";
+  if(error) return toast("Login failed: "+error.message);
+  $("pass").value=""; enter();
+});
+$("logoutBtn").addEventListener("click",async()=>{await db.auth.signOut();rows=[];show("login")});
+
+/* ---------- Data ---------- */
+async function load(){
+  $("list").innerHTML='<div class="empty">Loading...</div>';
+  const {data,error}=await db.from("listings").select("*").order("created_at",{ascending:false}).limit(2000);
+  if(error){ $("list").innerHTML='<div class="empty">Could not load: '+esc(error.message)+'</div>'; return; }
+  rows=data||[]; renderStats(); render();
+}
+function renderStats(){
+  const week=Date.now()-7*86400000, day=Date.now()-86400000;
+  const n=f=>rows.filter(f).length;
+  const s=[
+    ["Total listings",rows.length],["Visible",n(x=>!x.hidden)],["Hidden",n(x=>x.hidden)],["⭐ Featured",n(x=>x.featured)],
+    ["New today",n(x=>new Date(x.created_at)>day)],["New this week",n(x=>new Date(x.created_at)>week)],
+    ["🛒 Products",n(x=>x.type==="product")],["🏠 Rooms",n(x=>x.type==="room")],["📚 Materials",n(x=>x.type==="material")],["🎥 Videos",n(x=>x.type==="video")]
+  ];
+  $("stats").innerHTML=s.map(([l,v])=>'<div class="stat"><b>'+v+'</b><span>'+l+'</span></div>').join("");
+}
+function filtered(){
+  const q=$("q").value.trim().toLowerCase(), t=$("fType").value, st=$("fState").value;
+  return rows.filter(x=>(!t||x.type===t)&&
+    (!st||(st==="hidden"?x.hidden:st==="featured"?x.featured:!x.hidden))&&
+    (!q||[x.title,x.seller,x.phone,x.description,x.category,x.location,x.id].join(" ").toLowerCase().includes(q)));
+}
+function render(){
+  const list=filtered();
+  $("count").textContent=list.length+" of "+rows.length+" listings";
+  $("list").innerHTML=list.length?list.map(x=>{
+    const img=/^https?:\/\//.test(x.image_url||"")?'<img src="'+esc(x.image_url)+'" loading="lazy" alt="">':(EMOJI[x.type]||"🛍️");
+    const wa=normPhone(x.phone)?'<a class="btn secondary" target="_blank" rel="noopener" href="https://wa.me/'+normPhone(x.phone)+'">WhatsApp</a>':"";
+    return '<div class="row'+(x.hidden?" is-hidden":"")+'" data-id="'+esc(x.id)+'">'+
+      '<div class="thumb">'+img+'</div><div class="info">'+
+      '<div>'+(x.featured?'<span class="badge f">⭐ FEATURED</span>':'')+(x.hidden?'<span class="badge h">HIDDEN</span>':'')+'<span class="badge">'+esc(x.type)+'</span>'+(x.category?'<span class="badge">'+esc(x.category)+'</span>':'')+'</div>'+
+      '<div class="t">'+esc(x.title)+'</div><div class="p">'+esc(x.price||"—")+'</div>'+
+      '<div class="m">By '+esc(x.seller||"Student")+(x.phone?' • '+esc(x.phone):'')+' • '+ago(x.created_at)+'</div>'+
+      (x.description?'<div class="m">'+esc(String(x.description).slice(0,140))+(String(x.description).length>140?"…":"")+'</div>':'')+
+      '<div class="acts">'+
+        '<button class="'+(x.featured?"secondary":"orange")+'" data-act="feature">'+(x.featured?"Unfeature":"⭐ Feature")+'</button>'+
+        '<button class="secondary" data-act="hide">'+(x.hidden?"👁 Show":"🙈 Hide")+'</button>'+
+        '<button class="secondary" data-act="edit">✏️ Edit</button>'+wa+
+        '<a class="btn secondary" target="_blank" rel="noopener" href="./#l-'+encodeURIComponent(x.id)+'">View</a>'+
+        '<button class="danger" data-act="delete">🗑️</button>'+
+      '</div></div></div>';
+  }).join(""):'<div class="empty">No listings match.</div>';
+}
+async function patch(id,changes,msg){
+  const {data,error}=await db.from("listings").update(changes).eq("id",id).select();
+  if(error) return toast("Failed: "+error.message,6000), false;
+  if(!data||!data.length) return toast("Not allowed — check your admin setup."), false;
+  Object.assign(rows.find(r=>r.id===id),data[0]); renderStats(); render(); if(msg) toast(msg); return true;
+}
+
+/* ---------- Actions ---------- */
+$("list").addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]"); if(!b) return;
+  const x=rows.find(r=>r.id===b.closest(".row").dataset.id); if(!x) return;
+  const a=b.dataset.act;
+  if(a==="feature") patch(x.id,{featured:!x.featured},x.featured?"Removed from featured":"⭐ Now featured");
+  if(a==="hide") patch(x.id,{hidden:!x.hidden},x.hidden?"Listing is visible again":"Listing hidden from the site");
+  if(a==="edit") openEdit(x);
+  if(a==="delete"){deleting=x;$("delText").textContent='"'+x.title+'" by '+(x.seller||"Student");$("delModal").classList.remove("hidden")}
+});
+
+const F=["title","price","category","location","status","features","seller","phone","link","description"];
+function openEdit(x){editing=x;F.forEach(f=>$("e-"+f).value=x[f]||"");$("editModal").classList.remove("hidden")}
+$("cancelEdit").addEventListener("click",()=>$("editModal").classList.add("hidden"));
+$("editForm").addEventListener("submit",async e=>{
+  e.preventDefault(); if(!editing) return;
+  const c={}; F.forEach(f=>{c[f]=$("e-"+f).value.trim()||null});
+  if(!c.title||c.title.length<2) return toast("Title is too short.");
+  if(c.phone){const p=normPhone(c.phone); if(!p) return toast("Check the phone number."); c.phone=p;}
+  if(c.link&&!/^https?:\/\//i.test(c.link)) return toast("Link must start with http:// or https://");
+  const b=$("saveBtn"); b.disabled=true;
+  const ok=await patch(editing.id,c,"✅ Saved"); b.disabled=false;
+  if(ok) $("editModal").classList.add("hidden");
+});
+
+$("cancelDel").addEventListener("click",()=>{deleting=null;$("delModal").classList.add("hidden")});
+$("confirmDel").addEventListener("click",async()=>{
+  if(!deleting) return; const x=deleting, b=$("confirmDel"); b.disabled=true;
+  const {data,error}=await db.from("listings").delete().eq("id",x.id).select();
+  b.disabled=false;
+  if(error) return toast("Failed: "+error.message,6000);
+  if(!data||!data.length) return toast("Not allowed — check your admin setup.");
+  const path=storagePath(x.image_url);
+  if(path){const {error:se}=await db.storage.from(BUCKET).remove([path]); if(se) console.warn("Photo not removed",se);}
+  rows=rows.filter(r=>r.id!==x.id); deleting=null; $("delModal").classList.add("hidden"); renderStats(); render(); toast("🗑️ Deleted");
+});
+
+$("csvBtn").addEventListener("click",()=>{
+  const cols=["created_at","type","title","category","price","location","status","seller","phone","featured","hidden","description","link","image_url","id"];
+  const cell=v=>{let s=String(v??"");if(/^[=+\-@]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"'};
+  const csv=[cols.join(",")].concat(filtered().map(r=>cols.map(c=>cell(r[c])).join(","))).join("\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+csv],{type:"text/csv"}));
+  a.download="unimarket-listings-"+new Date().toISOString().slice(0,10)+".csv";document.body.appendChild(a);a.click();a.remove();
+});
+$("refreshBtn").addEventListener("click",load);
+["q","fType","fState"].forEach(id=>$(id).addEventListener(id==="q"?"input":"change",render));
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){$("editModal").classList.add("hidden");$("delModal").classList.add("hidden")}});
+
+(async()=>{const {data:{session}}=await db.auth.getSession(); if(session) enter(); else show("login");})();
+</script>
+</body>
+</html>
