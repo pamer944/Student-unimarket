@@ -291,7 +291,7 @@ async function loadListings(){
   let rows=null;
   if(db){
     try{
-      const {data,error}=await db.from("listings").select("*").order("created_at",{ascending:false}).limit(500);
+      const {data,error}=await db.from("listings").select("*").eq("hidden",false).order("created_at",{ascending:false}).limit(500);
       if(error) throw error;
       rows=data||[];
     }catch(e){ console.error(e); toast("Couldn't load listings. Check your connection."); }
