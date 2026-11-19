@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Student UniMarket | Mulungushi University</title>
+<meta name="description" content="Buy, sell, rent and learn — the student marketplace for Mulungushi University.">
+<meta name="theme-color" content="#17221b">
+<style>
+:root{--bg:#101411;--panel:#1b241e;--panel2:#253129;--green:#00d26a;--muted:#aebbb2;--line:#354239;--white:#f5fff8;--orange:#ffad33;--wa:#25D366}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--white);font-family:Arial,Helvetica,sans-serif;padding-bottom:90px}
+header{background:#17221b;border-bottom:3px solid var(--green);padding:16px 14px;text-align:center;position:sticky;top:0;z-index:5}
+header h1{margin:0;color:#36ee8a;font-size:24px}
+header p{margin:4px 0 0;color:var(--muted);font-size:13px}
+header .by{color:#39e98a;font-weight:bold}
+.wrap{max-width:1100px;margin:auto}
+.topline{padding:12px}
+input,textarea,select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:#111a14;color:#fff;font:inherit;font-size:16px}
+label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+button,.btn{border:0;border-radius:10px;padding:11px 14px;background:var(--green);color:#06130a;font-weight:bold;cursor:pointer;text-decoration:none;display:inline-block;font:inherit;font-weight:bold;text-align:center}
+button:disabled{opacity:.6;cursor:wait}
+.btn.wa{background:var(--wa)}
+.btn.orange,button.orange{background:var(--orange);color:#1a1000}
+.btn.secondary,button.secondary{background:var(--panel2);color:#fff;border:1px solid var(--line)}
+.linkbtn{background:none;border:0;color:var(--muted);font-size:12px;padding:6px 0;text-decoration:underline;font-weight:normal}
+.tabs{display:flex;gap:7px;overflow-x:auto;padding:0 12px 10px;scrollbar-width:none}
+.tab{white-space:nowrap;background:var(--panel2);color:#fff;border:1px solid var(--line)}
+.tab.active{background:var(--green);color:#06130a}
+.chips{display:flex;gap:7px;overflow-x:auto;padding:4px 0 6px;scrollbar-width:none}
+.chip{white-space:nowrap;background:var(--panel2);color:#fff;border:1px solid var(--line);border-radius:20px;padding:8px 14px;font-size:13px;font-weight:normal}
+.chip.active{background:var(--green);color:#06130a;font-weight:bold}
+main{padding:0 12px}
+.heading{font-size:19px;margin:12px 0 6px}
+.muted{color:var(--muted);font-size:13px;line-height:1.5}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row select{width:auto;flex:0 0 auto;padding:9px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin:12px 0 18px}
+.grid.wide{grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
+.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.card{display:flex;flex-direction:column;scroll-margin-top:110px}
+.card.flash{outline:3px solid var(--orange)}
+.photo{height:140px;background:#26332a;display:flex;align-items:center;justify-content:center;font-size:42px;overflow:hidden;position:relative;border:0;padding:0;width:100%;border-radius:0}
+.wide .photo{height:170px}
+.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.photo .zoom{position:absolute;right:6px;bottom:6px;background:#000a;color:#fff;font-size:11px;padding:3px 7px;border-radius:6px}
+.body{padding:11px;display:flex;flex-direction:column;flex:1}
+.title{font-weight:bold;line-height:1.3}
+.price{color:#4cf39a;font-weight:bold;font-size:17px;margin:4px 0}
+.tag{display:inline-block;background:#064b2b;color:#8affbb;padding:3px 7px;border-radius:6px;font-size:11px;margin:3px 4px 3px 0}
+.tag.hot{background:var(--orange);color:#1a1000;font-weight:bold}
+.tag.full{background:#5a1f1f;color:#ffbcbc}
+.features{font-size:13px;color:#cfdad2;margin:4px 0}
+.desc{color:var(--muted);font-size:13px;line-height:1.45;margin:6px 0;word-wrap:break-word}
+.meta{color:#8d9c92;font-size:11px;margin-top:auto;padding-top:6px}
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.actions .btn,.actions button{font-size:12px;padding:9px 10px;flex:1 1 auto}
+.panel{padding:15px;margin:14px 0}
+.panel h3{margin:0 0 8px}
+.promo{border-color:#6b4a12;background:linear-gradient(135deg,#2a2110,#1b241e)}
+.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.formgrid .full{grid-column:1/-1}
+textarea{min-height:90px;resize:vertical}
+.hidden{display:none!important}
+.empty{padding:25px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px;grid-column:1/-1}
+.notice{background:#2a2110;border:1px solid #6b4a12;color:#ffd38a;padding:10px 12px;border-radius:10px;font-size:13px;margin:8px 0}
+#preview{max-height:160px;border-radius:10px;margin-top:8px;display:block}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:25px 10px}
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#eafff1;color:#062512;padding:11px 16px;border-radius:10px;display:none;z-index:40;box-shadow:0 4px 20px #0008;max-width:92vw;text-align:center}
+.modal{position:fixed;inset:0;background:#000d;display:flex;align-items:center;justify-content:center;padding:14px;z-index:30}
+.modalbox{max-width:720px;width:100%;background:var(--panel);padding:14px;border:1px solid var(--line);border-radius:15px;max-height:94vh;overflow:auto}
+.modalbox img{width:100%;max-height:70vh;object-fit:contain;border-radius:10px;background:#000}
+.bottom{position:fixed;bottom:0;left:0;right:0;padding:10px 12px;background:#101411ee;border-top:1px solid var(--line);z-index:8}
+.bottom button{width:100%;max-width:700px;display:block;margin:auto;padding:14px;font-size:16px}
+.skeleton{height:220px;border-radius:14px;background:linear-gradient(90deg,#1b241e,#253129,#1b241e);background-size:200% 100%;animation:sh 1.2s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+@media(min-width:760px){header h1{font-size:29px}.topline,main{padding-left:20px;padding-right:20px}.tabs{padding-left:20px}.photo{height:170px}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>🎓 Student UniMarket</h1>
+  <p>Mulungushi University • Buy • Sell • Rent • Learn</p>
+  <p class="by">By Paul The Memer – PM Services</p>
+</div></header>
+
+<div class="wrap">
+<div class="topline"><input id="search" type="search" placeholder="🔍 Search phones, books, boarding houses, notes..." autocomplete="off"></div>
+
+<nav class="tabs" id="tabs">
+  <button class="tab active" data-tab="product">🛒 Marketplace</button>
+  <button class="tab" data-tab="room">🏠 Accommodation</button>
+  <button class="tab" data-tab="material">📚 Free Materials</button>
+  <button class="tab" data-tab="video">🎥 Tutorials</button>
+  <button class="tab" data-tab="contact">💬 Contact</button>
+</nav>
+
+<main>
+<div id="sampleNotice" class="notice hidden">Showing sample listings. Real listings will appear here once students start posting.</div>
+
+<section id="sec-product">
+  <h2 class="heading">🔥 Student Marketplace</h2>
+  <div class="chips" id="chips"></div>
+  <div class="row"><select id="sort" aria-label="Sort">
+    <option value="new">Newest first</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option>
+  </select></div>
+  <div id="list-product" class="grid"></div>
+</section>
+
+<section id="sec-room" class="hidden">
+  <h2 class="heading">🏠 Boarding Houses Near Mulungushi</h2>
+  <p class="muted">Always view a room in person before paying any money.</p>
+  <div id="list-room" class="grid wide"></div>
+  <div class="panel promo">
+    <h3>🏠 Are you a landlord?</h3>
+    <p class="muted">List your boarding house FREE for 7 days. After that, pay only K30/month to stay at the top. Students WhatsApp you directly.</p>
+    <a class="btn orange" target="_blank" rel="noopener" id="landlordBtn">List my house – K30/month</a>
+  </div>
+</section>
+
+<section id="sec-material" class="hidden">
+  <h2 class="heading">📚 Free Learning Materials</h2>
+  <p class="muted">Share notes and study resources. Only upload materials you have permission to share.</p>
+  <div id="list-material" class="grid"></div>
+</section>
+
+<section id="sec-video" class="hidden">
+  <h2 class="heading">🎥 Tutorial Videos</h2>
+  <p class="muted">YouTube, TikTok or Google Drive tutorial links shared by students.</p>
+  <div id="list-video" class="grid"></div>
+</section>
+
+<section id="sec-contact" class="hidden">
+  <h2 class="heading">💬 Contact UniMarket</h2>
+  <div class="panel"><h3>Talk to the UniMarket team</h3>
+    <p class="muted">For support, featured listings, removing a listing or partnerships, chat with us on WhatsApp.</p>
+    <a class="btn wa" target="_blank" rel="noopener" id="ownerBtn">Chat on WhatsApp</a></div>
+  <div class="panel"><h3>🛡️ Stay safe</h3>
+    <p class="muted">• Meet in a public place on campus.<br>• Check the item before you pay.<br>• Never send money for a room you haven't seen.<br>• Use the <b>Report</b> link on any listing that looks like a scam.</p></div>
+  <div class="panel promo"><h3>⭐ Get featured</h3>
+    <p class="muted">Want your item or business shown first? Ask us about featured listings.</p>
+    <a class="btn orange" target="_blank" rel="noopener" id="featureBtn">Ask about featuring</a></div>
+</section>
+
+<div class="panel" id="uploadPanel">
+  <h3>➕ Post a listing</h3>
+  <p class="muted">Free to post. Your listing is shown to every student who visits.</p>
+  <form id="form" class="formgrid" autocomplete="on" novalidate>
+    <div><label for="f-type">Listing type</label>
+      <select id="f-type"><option value="product">🛒 Product / Service</option><option value="room">🏠 Accommodation</option><option value="material">📚 Free learning material</option><option value="video">🎥 Tutorial video</option></select></div>
+    <div><label for="f-title">Title *</label><input id="f-title" maxlength="80" placeholder="e.g. iPhone 11 – Neat"></div>
+    <div data-for="product"><label for="f-category">Category</label><select id="f-category"></select></div>
+    <div data-for="product room"><label for="f-price" id="priceLabel">Price</label><input id="f-price" maxlength="30" placeholder="e.g. K350"></div>
+    <div data-for="product room"><label for="f-location">Location</label><input id="f-location" maxlength="60" placeholder="e.g. Behind main gate"></div>
+    <div data-for="room"><label for="f-status">Availability</label><select id="f-status"><option>Available</option><option>Few rooms left</option><option>Full</option></select></div>
+    <div data-for="room" class="full"><label for="f-features">Features (separate with commas)</label><input id="f-features" maxlength="200" placeholder="5 mins walk, Water 24/7, WiFi, Secure, 2 in a room"></div>
+    <div data-for="material video"><label for="f-course">Course code</label><input id="f-course" maxlength="20" placeholder="e.g. BAF 221"></div>
+    <div data-for="material video"><label for="f-link" id="linkLabel">Link</label><input id="f-link" type="url" maxlength="500" placeholder="https://..."></div>
+    <div><label for="f-seller">Your name / business</label><input id="f-seller" maxlength="60" autocomplete="name"></div>
+    <div><label for="f-phone" id="phoneLabel">WhatsApp number *</label><input id="f-phone" type="tel" maxlength="20" placeholder="e.g. 0971234567" autocomplete="tel"></div>
+    <div class="full"><label for="f-description">Description</label><textarea id="f-description" maxlength="1000" placeholder="Condition, what's included, what students will learn..."></textarea></div>
+    <div class="full" data-for="product room material"><label for="f-photo">Photo</label><input id="f-photo" type="file" accept="image/*"><img id="preview" class="hidden" alt="Preview"></div>
+    <div class="hp" aria-hidden="true"><input id="f-website" tabindex="-1" autocomplete="off"></div>
+    <div class="full actions">
+      <button type="submit" id="publishBtn">Publish listing</button>
+      <button type="button" class="secondary" id="resetBtn">Clear form</button>
+    </div>
+  </form>
+  <p class="muted">Photos are shrunk automatically before upload so they post fast on mobile data. Don't post ID cards or private documents.</p>
+</div>
+</main>
+<footer>Student UniMarket • Mulungushi University • PM Services</footer>
+</div>
+
+<div class="bottom"><button id="postBtn">＋ POST A LISTING – FREE</button></div>
+<div id="toast" role="status"></div>
+
+<div id="viewer" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="modalbox">
+    <img id="viewerImg" alt="">
+    <p class="muted" id="viewerTitle"></p>
+    <div class="actions">
+      <button id="dlBtn">⬇️ Download photo</button>
+      <button class="secondary" id="closeViewer">Close</button>
+    </div>
+    <p class="muted">If the download doesn't start (for example inside WhatsApp or Facebook), press and hold the photo and choose "Save image".</p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = "https://svipakncqjnzccurdyfh.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_9npPq4sgrjsePqRyLmSrxA_71-hY1KS";
+const OWNER_WA = "260974701006";
+const BUCKET = "product-images";
+const CATS = ["Phones","Laptops","Electronics","Books","Clothes","Food","Services","Other"];
+const COOLDOWN_MS = 60000;
+
+let db = null;
+try { db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch (e) { console.error("Supabase failed to load", e); }
+
+const SAMPLES = [
+  {id:"s1",type:"product",featured:true,title:"iPhone 11 – Neat",category:"Phones",price:"K3,500",location:"Mulungushi",seller:"Chanda",phone:OWNER_WA,description:"Battery 92%, with charger."},
+  {id:"s2",type:"product",title:"BAF 221 Textbook",category:"Books",price:"K150",location:"Mulungushi",seller:"Student seller",phone:OWNER_WA,description:"Good condition."},
+  {id:"s3",type:"room",title:"Green View Boarding House",price:"K850 / month",status:"Few rooms left",location:"5 mins walk to Mulungushi",features:"Water 24/7, Free WiFi, Secure, 2 in a room",seller:"Mr Phiri",phone:OWNER_WA,description:"Confirm details with the landlord."},
+  {id:"s4",type:"room",title:"Highlands Student Hostel",price:"K650 / month",status:"Available",location:"Behind main gate",features:"Borehole, WiFi, Kitchen, Single room",seller:"Landlord",phone:OWNER_WA,description:""},
+  {id:"s5",type:"material",title:"BAF 221 Past Paper 2024",category:"BAF 221",price:"FREE",seller:"Paul",phone:OWNER_WA,description:"Past paper with answers."},
+  {id:"s6",type:"video",title:"How To Pass BAF 221 – Full Tutorial",category:"BAF 221",price:"FREE",seller:"Paul The Memer",link:"https://youtube.com",description:"Step-by-step exam questions explained."}
+];
+const EMOJI = {product:"🛍️",room:"🏠",material:"📚",video:"🎥"};
+
+let listings = [], activeTab = "product", activeCat = "";
+const $ = id => document.getElementById(id);
+
+function esc(s){return String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function toast(msg,ms=3500){const t=$("toast");t.textContent=msg;t.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display="none",ms)}
+
+// Turns 0971234567 / 971234567 / +260 97 123 4567 into 260971234567
+function normPhone(raw){
+  let d=String(raw||"").replace(/\D/g,"");
+  if(d.startsWith("00")) d=d.slice(2);
+  if(d.length===10 && d[0]==="0") d="260"+d.slice(1);
+  else if(d.length===9 && /^[79]/.test(d)) d="260"+d;
+  return /^\d{10,15}$/.test(d) ? d : null;
+}
+function wa(phone,text){const p=normPhone(phone);return p?"https://wa.me/"+p+"?text="+encodeURIComponent(text):null}
+function safeUrl(u){return /^https?:\/\//i.test(u||"") ? u : null}
+function ago(t){
+  if(!t) return "";
+  const s=(Date.now()-new Date(t).getTime())/1000; if(isNaN(s)) return "";
+  if(s<3600) return Math.max(1,Math.round(s/60))+" min ago";
+  if(s<86400) return Math.round(s/3600)+" h ago";
+  const d=Math.round(s/86400); return d===1?"yesterday":d+" days ago";
+}
+const priceNum = x => Number(String(x.price||"").replace(/,/g,"").match(/\d+(\.\d+)?/)?.[0]) || 0;
+
+function statusTag(s){
+  if(!s) return "";
+  const cls = /full/i.test(s) ? "full" : /few|left/i.test(s) ? "hot" : "";
+  return '<span class="tag '+cls+'">'+esc(s.toUpperCase())+'</span>';
+}
+
+function card(x){
+  const img = safeUrl(x.image_url);
+  const photo = img
+    ? '<button class="photo" data-act="view" data-id="'+esc(x.id)+'" aria-label="View photo"><img src="'+esc(img)+'" alt="'+esc(x.title)+'" loading="lazy"><span class="zoom">🔍 View</span></button>'
+    : '<div class="photo">'+(EMOJI[x.type]||"🛍️")+'</div>';
+  const tags = (x.featured?'<span class="tag hot">⭐ FEATURED</span>':'') +
+    (x.type==="room" ? statusTag(x.status) : (x.category?'<span class="tag">'+esc(x.category)+'</span>':''));
+  const feats = x.type==="room" && x.features
+    ? '<div class="features">'+String(x.features).split(",").map(f=>f.trim()).filter(Boolean).map(f=>"✔ "+esc(f)).join(" • ")+'</div>' : "";
+  const loc = x.location ? '<div class="features">📍 '+esc(x.location)+'</div>' : "";
+  const contactTxt = x.type==="room" ? "Hi, I'd like to view "+x.title+" (Student UniMarket)." : "Hi, I'm interested in "+x.title+" on Student UniMarket.";
+  const waLink = wa(x.phone, contactTxt);
+  const contact = waLink ? '<a class="btn '+(x.type==="room"?"orange":"wa")+'" target="_blank" rel="noopener" href="'+esc(waLink)+'">'+(x.type==="room"?"View / Book":"WhatsApp")+'</a>' : "";
+  const res = safeUrl(x.link) ? '<a class="btn secondary" target="_blank" rel="noopener" href="'+esc(x.link)+'">'+(x.type==="video"?"▶ Watch":"Open")+'</a>' : "";
+  return '<article class="card" id="l-'+esc(x.id)+'">'+photo+'<div class="body">'+
+    '<div>'+tags+'</div><div class="title">'+esc(x.title)+'</div>'+
+    '<div class="price">'+esc(x.price||"Contact seller")+'</div>'+loc+feats+
+    (x.description?'<p class="desc">'+esc(x.description)+'</p>':'')+
+    '<div class="meta">By '+esc(x.seller||"Student")+(x.created_at?' • '+ago(x.created_at):'')+'</div>'+
+    '<div class="actions">'+contact+res+'<button class="secondary" data-act="share" data-id="'+esc(x.id)+'">Share</button></div>'+
+    '<button class="linkbtn" data-act="report" data-id="'+esc(x.id)+'">Report listing</button>'+
+    '</div></article>';
+}
+
+function render(){
+  if(activeTab==="contact") return;
+  const q=$("search").value.trim().toLowerCase();
+  let items=listings.filter(x=>x.type===activeTab);
+  if(q) items=items.filter(x=>[x.title,x.description,x.category,x.seller,x.location,x.features,x.course].join(" ").toLowerCase().includes(q));
+  if(activeTab==="product" && activeCat) items=items.filter(x=>x.category===activeCat);
+  const sort=$("sort").value;
+  if(activeTab==="product" && sort!=="new") items.sort((a,b)=>sort==="low"?priceNum(a)-priceNum(b):priceNum(b)-priceNum(a));
+  else items.sort((a,b)=>(b.featured?1:0)-(a.featured?1:0) || new Date(b.created_at||0)-new Date(a.created_at||0));
+  $("list-"+activeTab).innerHTML = items.length ? items.map(card).join("") :
+    '<div class="empty">'+(q||activeCat?"No listings match your search.":"No listings here yet — be the first to post!")+'</div>';
+}
+
+function showTab(tab){
+  activeTab=tab;
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===tab));
+  document.querySelectorAll("main section").forEach(s=>s.classList.toggle("hidden",s.id!=="sec-"+tab));
+  if(tab!=="contact"){ $("f-type").value=tab; syncForm(); }
+  render();
+}
+
+async function loadListings(){
+  $("list-product").innerHTML='<div class="skeleton"></div><div class="skeleton"></div>';
+  let rows=null;
+  if(db){
+    try{
+      const {data,error}=await db.from("listings").select("*").order("created_at",{ascending:false}).limit(500);
+      if(error) throw error;
+      rows=data||[];
+    }catch(e){ console.error(e); toast("Couldn't load listings. Check your connection."); }
+  }
+  const useSamples = !rows || rows.length===0;
+  listings = useSamples ? SAMPLES : rows;
+  $("sampleNotice").classList.toggle("hidden",!useSamples);
+  render();
+  openFromHash();
+}
+
+function openFromHash(){
+  const m=location.hash.match(/^#l-(.+)$/); if(!m) return;
+  const x=listings.find(l=>String(l.id)===decodeURIComponent(m[1])); if(!x) return;
+  showTab(x.type);
+  setTimeout(()=>{const el=$("l-"+x.id); if(el){el.scrollIntoView({behavior:"smooth",block:"center"});el.classList.add("flash");setTimeout(()=>el.classList.remove("flash"),2500)}},100);
+}
+
+/* ---------- Photo viewer & download ---------- */
+let viewing=null;
+function openViewer(x){viewing=x;$("viewerImg").src=x.image_url;$("viewerImg").alt=x.title;$("viewerTitle").textContent=x.title;$("viewer").classList.remove("hidden")}
+function closeViewer(){$("viewer").classList.add("hidden");$("viewerImg").src="";viewing=null}
+async function downloadPhoto(x){
+  const name=(String(x.title||"photo").replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").slice(0,40)||"photo")+".jpg";
+  const btn=$("dlBtn"); btn.disabled=true; btn.textContent="Downloading...";
+  try{
+    const r=await fetch(x.image_url,{mode:"cors"}); if(!r.ok) throw new Error(r.status);
+    const blob=await r.blob(); const u=URL.createObjectURL(blob);
+    const a=document.createElement("a"); a.href=u; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(u),5000); toast("Photo downloaded ✔");
+  }catch(e){
+    // Supabase sends the file as a download when ?download= is added
+    window.open(x.image_url+(x.image_url.includes("?")?"&":"?")+"download="+encodeURIComponent(name),"_blank","noopener");
+  }finally{ btn.disabled=false; btn.textContent="⬇️ Download photo"; }
+}
+
+/* ---------- Share & report ---------- */
+async function share(x){
+  const url=location.origin+location.pathname+"#l-"+encodeURIComponent(x.id);
+  const text=x.title+(x.price?" – "+x.price:"")+" on Student UniMarket";
+  if(navigator.share){ try{ await navigator.share({title:x.title,text,url}); return; }catch(e){ if(e.name==="AbortError") return; } }
+  window.open("https://wa.me/?text="+encodeURIComponent(text+"\n"+url),"_blank","noopener");
+}
+function report(x){window.open(wa(OWNER_WA,"I want to report this listing on UniMarket: \""+x.title+"\" (id: "+x.id+"). Reason: "),"_blank","noopener")}
+
+/* ---------- Posting ---------- */
+function syncForm(){
+  const t=$("f-type").value;
+  document.querySelectorAll("[data-for]").forEach(el=>el.classList.toggle("hidden",!el.dataset.for.split(" ").includes(t)));
+  $("priceLabel").textContent = t==="room" ? "Rent (e.g. K850 / month)" : "Price";
+  $("linkLabel").textContent = t==="video" ? "Video link *" : "Document link (Google Drive etc.)";
+  $("phoneLabel").textContent = (t==="product"||t==="room") ? "WhatsApp number *" : "WhatsApp number (optional)";
+}
+
+function compressImage(file,max=1280,quality=0.82){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file), img=new Image();
+    img.onload=()=>{
+      const s=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+      const w=Math.round(img.naturalWidth*s), h=Math.round(img.naturalHeight*s);
+      const c=document.createElement("canvas"); c.width=w; c.height=h;
+      const ctx=c.getContext("2d"); ctx.fillStyle="#fff"; ctx.fillRect(0,0,w,h); ctx.drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url);
+      c.toBlob(b=>b?resolve(b):reject(new Error("Could not process photo")),"image/jpeg",quality);
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("This photo format isn't supported. Try a JPG or PNG."))};
+    img.src=url;
+  });
+}
+
+async function uploadPhoto(file){
+  let blob;
+  try{ blob=await compressImage(file); }
+  catch(e){ if(/^image\/(jpeg|png|webp)$/.test(file.type) && file.size<=5*1024*1024) blob=file; else throw e; }
+  const ext = blob.type==="image/png"?"png":blob.type==="image/webp"?"webp":"jpg";
+  const path=new Date().toISOString().slice(0,10)+"/"+Date.now()+"-"+Math.random().toString(36).slice(2,8)+"."+ext;
+  const {error}=await db.storage.from(BUCKET).upload(path,blob,{contentType:blob.type||"image/jpeg",upsert:false,cacheControl:"31536000"});
+  if(error) throw error;
+  return db.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+}
+
+function lastPost(){try{return Number(localStorage.getItem("um_last_post"))||0}catch(e){return 0}}
+function markPosted(){try{localStorage.setItem("um_last_post",Date.now())}catch(e){}}
+
+async function publish(ev){
+  ev.preventDefault();
+  if($("f-website").value) return; // bot trap
+  if(!db){toast("Posting is unavailable right now. Check your internet and reload.");return}
+  const v=id=>$(id).value.trim();
+  const type=v("f-type"), title=v("f-title"), file=$("f-photo").files[0];
+  const needsPhone = type==="product"||type==="room";
+  const phoneRaw=v("f-phone"), phone=phoneRaw?normPhone(phoneRaw):null, link=v("f-link");
+  if(title.length<2) return toast("Please enter a title.");
+  if(needsPhone && !phoneRaw) return toast("Please add your WhatsApp number so buyers can reach you.");
+  if(phoneRaw && !phone) return toast("Check the WhatsApp number, e.g. 0971234567.");
+  if(type==="video" && !link) return toast("Please paste the video link.");
+  if(link && !safeUrl(link)) return toast("Links must start with http:// or https://");
+  if(file && !file.type.startsWith("image/")) return toast("Please choose a photo file.");
+  if(file && file.size>20*1024*1024) return toast("That photo is too large (max 20 MB).");
+  const wait=COOLDOWN_MS-(Date.now()-lastPost());
+  if(wait>0) return toast("Please wait "+Math.ceil(wait/1000)+"s before posting again.");
+
+  const btn=$("publishBtn"); btn.disabled=true;
+  try{
+    let image_url=null;
+    if(file && type!=="video"){ btn.textContent="Uploading photo..."; image_url=await uploadPhoto(file); }
+    btn.textContent="Publishing...";
+    const course=v("f-course");
+    const row={
+      type,title,
+      category: type==="product"?v("f-category"):type==="room"?"Accommodation":(course||(type==="video"?"Tutorial":"Study material")),
+      price: (type==="material"||type==="video")?"FREE":(v("f-price")||null),
+      location: needsPhone?(v("f-location")||null):null,
+      status: type==="room"?v("f-status"):null,
+      features: type==="room"?(v("f-features")||null):null,
+      seller: v("f-seller")||"Student",
+      phone, course: course||null, link: link||null,
+      description: v("f-description")||null, image_url
+    };
+    const {error}=await db.from("listings").insert(row);
+    if(error) throw error;
+    markPosted(); resetForm(); await loadListings(); showTab(type);
+    toast("✅ Listing published for all students!");
+  }catch(e){
+    console.error(e);
+    const msg=String(e.message||e);
+    toast(/column|schema/i.test(msg) ? "Database needs updating — run the setup SQL in Supabase." :
+          /row-level security|policy|permission/i.test(msg) ? "Posting blocked by database rules — run the setup SQL in Supabase." :
+          "Could not publish: "+msg, 6000);
+  }finally{ btn.disabled=false; btn.textContent="Publish listing"; }
+}
+
+function resetForm(){
+  const t=$("f-type").value; $("form").reset(); $("f-type").value=t;
+  $("preview").classList.add("hidden"); $("preview").removeAttribute("src"); syncForm();
+}
+
+/* ---------- Wiring ---------- */
+$("f-category").innerHTML=CATS.map(c=>"<option>"+c+"</option>").join("");
+$("chips").innerHTML=['<button class="chip active" data-cat="">All</button>'].concat(CATS.map(c=>'<button class="chip" data-cat="'+c+'">'+c+'</button>')).join("");
+$("landlordBtn").href=wa(OWNER_WA,"Hi Paul, I want to list my boarding house on UniMarket.");
+$("ownerBtn").href=wa(OWNER_WA,"Hello UniMarket team");
+$("featureBtn").href=wa(OWNER_WA,"Hi Paul, I want to feature my listing on UniMarket.");
+
+$("tabs").addEventListener("click",e=>{const b=e.target.closest(".tab"); if(b) showTab(b.dataset.tab)});
+$("chips").addEventListener("click",e=>{const b=e.target.closest(".chip"); if(!b) return; activeCat=b.dataset.cat; document.querySelectorAll(".chip").forEach(c=>c.classList.toggle("active",c===b)); render()});
+$("search").addEventListener("input",render);
+$("sort").addEventListener("change",render);
+$("f-type").addEventListener("change",syncForm);
+$("form").addEventListener("submit",publish);
+$("resetBtn").addEventListener("click",resetForm);
+$("postBtn").addEventListener("click",()=>{$("uploadPanel").scrollIntoView({behavior:"smooth"});setTimeout(()=>$("f-title").focus({preventScroll:true}),500)});
+$("f-photo").addEventListener("change",()=>{const f=$("f-photo").files[0],p=$("preview"); if(p.src) URL.revokeObjectURL(p.src); if(f&&f.type.startsWith("image/")){p.src=URL.createObjectURL(f);p.classList.remove("hidden")}else p.classList.add("hidden")});
+$("closeViewer").addEventListener("click",closeViewer);
+$("viewer").addEventListener("click",e=>{if(e.target.id==="viewer") closeViewer()});
+$("dlBtn").addEventListener("click",()=>viewing&&downloadPhoto(viewing));
+document.addEventListener("keydown",e=>{if(e.key==="Escape") closeViewer()});
+document.querySelector("main").addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]"); if(!b) return;
+  const x=listings.find(l=>String(l.id)===b.dataset.id); if(!x) return;
+  if(b.dataset.act==="view") openViewer(x); else if(b.dataset.act==="share") share(x); else if(b.dataset.act==="report") report(x);
+});
+window.addEventListener("hashchange",openFromHash);
+
+syncForm();
+loadListings();
+</script>
+</body>
+</html>
