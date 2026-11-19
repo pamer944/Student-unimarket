@@ -68,11 +68,20 @@ button:disabled{opacity:.6}
   <!-- DASHBOARD -->
   <div id="app" class="hidden">
     <div class="stats" id="stats"></div>
+    <div class="acts" style="margin:0 0 4px">
+      <button id="tabListings">📋 Listings</button>
+      <button class="secondary" id="tabReports">🚩 Reports <span id="repCount"></span></button>
+    </div>
+    <div id="reportsView" class="hidden">
+      <div class="panel"><select id="rState"><option value="open">Open reports</option><option value="resolved">Resolved</option><option value="">All reports</option></select></div>
+      <div id="reportList"></div>
+    </div>
+    <div id="listingsView">
     <div class="panel">
       <div class="toolbar">
         <input id="q" type="search" placeholder="🔍 Search title, seller, phone...">
         <select id="fType"><option value="">All types</option><option value="product">🛒 Products</option><option value="room">🏠 Rooms</option><option value="material">📚 Materials</option><option value="video">🎥 Videos</option></select>
-        <select id="fState"><option value="">All statuses</option><option value="visible">Visible</option><option value="hidden">Hidden</option><option value="featured">Featured</option></select>
+        <select id="fState"><option value="">All statuses</option><option value="pending">⏳ Pending approval</option><option value="visible">Visible</option><option value="hidden">Hidden</option><option value="featured">Featured</option></select>
       </div>
       <div class="acts">
         <button class="secondary" id="refreshBtn">↻ Refresh</button>
@@ -82,6 +91,7 @@ button:disabled{opacity:.6}
     </div>
     <p class="muted" id="count"></p>
     <div id="list"></div>
+    </div>
   </div>
 </div>
 
@@ -129,7 +139,8 @@ const ADMIN_EMAILS = ["zuluiwell26@gmail.com","mumbap771@gmail.com"];
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const EMOJI = {product:"🛍️",room:"🏠",material:"📚",video:"🎥"};
 const $ = id => document.getElementById(id);
-let rows = [], editing = null, deleting = null;
+let rows = [], reports = [], editing = null, deleting = null;
+const REASONS={scam:"🚨 Scam / lost money",fake:"🎭 Fake or misleading",sold:"✅ Sold / not available",wrong_info:"✏️ Wrong info",no_reply:"📵 Seller not answering",offensive:"⛔ Offensive",other:"💬 Other"};
 
 function esc(s){return String(s ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function toast(m,ms=3500){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display="none",ms)}
@@ -160,13 +171,41 @@ async function load(){
   $("list").innerHTML='<div class="empty">Loading...</div>';
   const {data,error}=await db.from("listings").select("*").order("created_at",{ascending:false}).limit(2000);
   if(error){ $("list").innerHTML='<div class="empty">Could not load: '+esc(error.message)+'</div>'; return; }
-  rows=data||[]; renderStats(); render();
+  rows=data||[];
+  const r=await db.from("reports").select("*").order("created_at",{ascending:false}).limit(1000);
+  reports=r.error?[]:(r.data||[]); if(r.error) console.warn("Reports not set up yet",r.error);
+  renderStats(); render(); renderReports();
+}
+function openReports(id){return reports.filter(r=>r.listing_id===id&&r.status==="open").length}
+function renderReports(){
+  const open=reports.filter(r=>r.status==="open").length;
+  $("repCount").textContent=open?"("+open+")":"";
+  const st=$("rState").value, list=reports.filter(r=>!st||r.status===st);
+  $("reportList").innerHTML=list.length?list.map(r=>{
+    const l=rows.find(x=>x.id===r.listing_id);
+    const thumb=l&&/^https?:\/\//.test(l.image_url||"")?'<img src="'+esc(l.image_url)+'" alt="">':"🚩";
+    return '<div class="row'+(r.status==="resolved"?" is-hidden":"")+'" data-rid="'+esc(r.id)+'">'+
+      '<div class="thumb">'+thumb+'</div><div class="info">'+
+      '<div><span class="badge '+(r.reason==="scam"||r.reason==="fake"?"h":"f")+'">'+esc(REASONS[r.reason]||r.reason)+'</span>'+(r.status==="resolved"?'<span class="badge">RESOLVED</span>':'')+(l&&l.hidden?'<span class="badge h">LISTING HIDDEN</span>':'')+(!l?'<span class="badge">LISTING DELETED</span>':'')+'</div>'+
+      '<div class="t">'+esc(r.listing_title||"(listing)")+'</div>'+
+      (l?'<div class="m">Seller: '+esc(l.seller||"Student")+(l.phone?' • '+esc(l.phone):'')+'</div>':'')+
+      (r.details?'<div class="m" style="color:#fff">“'+esc(r.details)+'”</div>':'')+
+      '<div class="m">Reported '+ago(r.created_at)+(r.contact?' • Reporter: '+esc(r.contact):'')+'</div>'+
+      '<div class="acts">'+
+        '<button class="'+(r.status==="open"?"":"secondary")+'" data-ract="resolve">'+(r.status==="open"?"✅ Resolve":"↩ Reopen")+'</button>'+
+        (l?'<button class="secondary" data-ract="hide">'+(l.hidden?"👁 Show listing":"🙈 Hide listing")+'</button>':'')+
+        (r.contact?'<a class="btn secondary" target="_blank" rel="noopener" href="https://wa.me/'+esc(r.contact)+'">WhatsApp reporter</a>':'')+
+        (l&&normPhone(l.phone)?'<a class="btn secondary" target="_blank" rel="noopener" href="https://wa.me/'+normPhone(l.phone)+'">WhatsApp seller</a>':'')+
+        (l?'<a class="btn secondary" target="_blank" rel="noopener" href="./#l-'+encodeURIComponent(l.id)+'">View</a>':'')+
+        '<button class="danger" data-ract="delete">🗑️</button>'+
+      '</div></div></div>';
+  }).join(""):'<div class="empty">'+(st==="open"?"No open reports 🎉":"No reports.")+'</div>';
 }
 function renderStats(){
   const week=Date.now()-7*86400000, day=Date.now()-86400000;
   const n=f=>rows.filter(f).length;
   const s=[
-    ["Total listings",rows.length],["Visible",n(x=>!x.hidden)],["Hidden",n(x=>x.hidden)],["⭐ Featured",n(x=>x.featured)],
+    ["Total listings",rows.length],["🚩 Open reports",reports.filter(r=>r.status==="open").length],["⏳ Pending approval",n(x=>!x.approved)],["Visible",n(x=>x.approved&&!x.hidden)],["Hidden",n(x=>x.hidden)],["⭐ Featured",n(x=>x.featured)],
     ["New today",n(x=>new Date(x.created_at)>day)],["New this week",n(x=>new Date(x.created_at)>week)],
     ["🛒 Products",n(x=>x.type==="product")],["🏠 Rooms",n(x=>x.type==="room")],["📚 Materials",n(x=>x.type==="material")],["🎥 Videos",n(x=>x.type==="video")]
   ];
@@ -175,22 +214,23 @@ function renderStats(){
 function filtered(){
   const q=$("q").value.trim().toLowerCase(), t=$("fType").value, st=$("fState").value;
   return rows.filter(x=>(!t||x.type===t)&&
-    (!st||(st==="hidden"?x.hidden:st==="featured"?x.featured:!x.hidden))&&
+    (!st||(st==="pending"?!x.approved:st==="hidden"?x.hidden:st==="featured"?x.featured:(x.approved&&!x.hidden)))&&
     (!q||[x.title,x.seller,x.phone,x.description,x.category,x.location,x.id].join(" ").toLowerCase().includes(q)));
 }
 function render(){
-  const list=filtered();
+  const list=filtered().sort((a,b)=>(a.approved?1:0)-(b.approved?1:0));
   $("count").textContent=list.length+" of "+rows.length+" listings";
   $("list").innerHTML=list.length?list.map(x=>{
     const img=/^https?:\/\//.test(x.image_url||"")?'<img src="'+esc(x.image_url)+'" loading="lazy" alt="">':(EMOJI[x.type]||"🛍️");
     const wa=normPhone(x.phone)?'<a class="btn secondary" target="_blank" rel="noopener" href="https://wa.me/'+normPhone(x.phone)+'">WhatsApp</a>':"";
     return '<div class="row'+(x.hidden?" is-hidden":"")+'" data-id="'+esc(x.id)+'">'+
       '<div class="thumb">'+img+'</div><div class="info">'+
-      '<div>'+(x.featured?'<span class="badge f">⭐ FEATURED</span>':'')+(x.hidden?'<span class="badge h">HIDDEN</span>':'')+'<span class="badge">'+esc(x.type)+'</span>'+(x.category?'<span class="badge">'+esc(x.category)+'</span>':'')+'</div>'+
+      '<div>'+(!x.approved?'<span class="badge f">⏳ PENDING APPROVAL</span>':'')+(x.featured?'<span class="badge f">⭐ FEATURED</span>':'')+(x.hidden?'<span class="badge h">HIDDEN</span>':'')+(openReports(x.id)?'<span class="badge h">🚩 '+openReports(x.id)+' REPORT'+(openReports(x.id)>1?'S':'')+'</span>':'')+'<span class="badge">'+esc(x.type)+'</span>'+(x.category?'<span class="badge">'+esc(x.category)+'</span>':'')+'</div>'+
       '<div class="t">'+esc(x.title)+'</div><div class="p">'+esc(x.price||"—")+'</div>'+
       '<div class="m">By '+esc(x.seller||"Student")+(x.phone?' • '+esc(x.phone):'')+' • '+ago(x.created_at)+'</div>'+
       (x.description?'<div class="m">'+esc(String(x.description).slice(0,140))+(String(x.description).length>140?"…":"")+'</div>':'')+
       '<div class="acts">'+
+        (!x.approved?'<button data-act="approve">✅ Approve</button><button class="danger" data-act="delete">❌ Reject</button>':'')+
         '<button class="'+(x.featured?"secondary":"orange")+'" data-act="feature">'+(x.featured?"Unfeature":"⭐ Feature")+'</button>'+
         '<button class="secondary" data-act="hide">'+(x.hidden?"👁 Show":"🙈 Hide")+'</button>'+
         '<button class="secondary" data-act="edit">✏️ Edit</button>'+wa+
@@ -203,7 +243,7 @@ async function patch(id,changes,msg){
   const {data,error}=await db.from("listings").update(changes).eq("id",id).select();
   if(error) return toast("Failed: "+error.message,6000), false;
   if(!data||!data.length) return toast("Not allowed — check your admin setup."), false;
-  Object.assign(rows.find(r=>r.id===id),data[0]); renderStats(); render(); if(msg) toast(msg); return true;
+  Object.assign(rows.find(r=>r.id===id),data[0]); renderStats(); render(); renderReports(); if(msg) toast(msg); return true;
 }
 
 /* ---------- Actions ---------- */
@@ -211,6 +251,7 @@ $("list").addEventListener("click",e=>{
   const b=e.target.closest("[data-act]"); if(!b) return;
   const x=rows.find(r=>r.id===b.closest(".row").dataset.id); if(!x) return;
   const a=b.dataset.act;
+  if(a==="approve") patch(x.id,{approved:true},"✅ Approved — now live on the site");
   if(a==="feature") patch(x.id,{featured:!x.featured},x.featured?"Removed from featured":"⭐ Now featured");
   if(a==="hide") patch(x.id,{hidden:!x.hidden},x.hidden?"Listing is visible again":"Listing hidden from the site");
   if(a==="edit") openEdit(x);
@@ -251,6 +292,28 @@ $("csvBtn").addEventListener("click",()=>{
   a.download="unimarket-listings-"+new Date().toISOString().slice(0,10)+".csv";document.body.appendChild(a);a.click();a.remove();
 });
 $("refreshBtn").addEventListener("click",load);
+function showTab(t){$("listingsView").classList.toggle("hidden",t!=="l");$("reportsView").classList.toggle("hidden",t!=="r");$("tabListings").className=t==="l"?"":"secondary";$("tabReports").className=t==="r"?"":"secondary"}
+$("tabListings").addEventListener("click",()=>showTab("l"));
+$("tabReports").addEventListener("click",()=>showTab("r"));
+$("rState").addEventListener("change",renderReports);
+$("reportList").addEventListener("click",async e=>{
+  const b=e.target.closest("[data-ract]"); if(!b) return;
+  const r=reports.find(x=>x.id===b.closest(".row").dataset.rid); if(!r) return;
+  const a=b.dataset.ract;
+  if(a==="resolve"){
+    const ns=r.status==="open"?"resolved":"open";
+    const {data,error}=await db.from("reports").update({status:ns}).eq("id",r.id).select();
+    if(error||!data||!data.length) return toast("Failed: "+(error?error.message:"not allowed"));
+    r.status=ns; renderStats(); render(); renderReports(); toast(ns==="resolved"?"✅ Marked resolved":"Reopened");
+  }
+  if(a==="hide"){const l=rows.find(x=>x.id===r.listing_id); if(l) patch(l.id,{hidden:!l.hidden},l.hidden?"Listing visible again":"🙈 Listing hidden");}
+  if(a==="delete"){
+    if(b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent="Tap again to delete";setTimeout(()=>{b.dataset.armed="";b.textContent="🗑️"},3000);return}
+    const {data,error}=await db.from("reports").delete().eq("id",r.id).select();
+    if(error||!data||!data.length) return toast("Failed: "+(error?error.message:"not allowed"));
+    reports=reports.filter(x=>x.id!==r.id); renderStats(); render(); renderReports(); toast("Report deleted");
+  }
+});
 ["q","fType","fState"].forEach(id=>$(id).addEventListener(id==="q"?"input":"change",render));
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){$("editModal").classList.add("hidden");$("delModal").classList.add("hidden")}});
 
