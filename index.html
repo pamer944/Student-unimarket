@@ -190,15 +190,15 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:25px 10px}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = "https://svipakncqjnzccurdyfh.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_9npPq4sgrjsePqRyLmSrxA_71-hY1KS";
+const SUPABASE_URL = "https://wcvualnkdslszltismqs.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_r4oSgwOcpu1Le7VH5S9Qsg_hCcCb4B7";
 const OWNER_WA = "260974701006";
 const BUCKET = "product-images";
 const CATS = ["Phones","Laptops","Electronics","Books","Clothes","Food","Services","Other"];
 const COOLDOWN_MS = 60000;
 
 let db = null;
-try { db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch (e) { console.error("Supabase failed to load", e); }
+try { if(SUPABASE_ANON_KEY==="PASTE_KEY_HERE") throw new Error("Supabase key missing"); db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch (e) { console.error("Supabase failed to load", e); }
 
 const SAMPLES = [
   {id:"s1",type:"product",featured:true,title:"iPhone 11 – Neat",category:"Phones",price:"K3,500",location:"Mulungushi",seller:"Chanda",phone:OWNER_WA,description:"Battery 92%, with charger."},
